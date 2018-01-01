@@ -9,3 +9,7 @@ Known Bugs
 
 To do list
 - Add splitting by object(s)
+
+Thanks to :
+https://www.pixiv.net/member.php?id=9678597 (background)
+https://github.com/eligrey/FileSaver.js/ (FileSaver.js)
