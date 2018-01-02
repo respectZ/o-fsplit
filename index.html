@@ -21,83 +21,79 @@ var allPart = [];
 var content = "";
 var fileName = "";
 function getPartContent(part) {
-	var parted = content.split("[HitObjects]")[0] + "[HitObjects]\n";
-	parted += "\n" + allPart[parseInt(part-1)];
-	var diff = fileName.split("[")[1];
-	diff = diff.substring(0, diff.length - 5);
-	parted = parted.replace(diff,diff + " Part " + part);
-	//id
-	parted = parted.replace(parted.split("BeatmapID:")[1].split("\n")[0], Math.floor(Math.random() * (12382942 - 100000 + 1) - 100000 ));
-	//osz
-	
-	return parted;
-	//var blob = new Blob([parted], {type: "text/plain;charset=utf-8"});
-	//saveAs(blob, finalName);
+  var parted = content.split("[HitObjects]")[0] + "[HitObjects]\n";
+  parted += "\n" + allPart[parseInt(part-1)];
+  var diff = fileName.split("[")[1];
+  diff = diff.substring(0, diff.length - 5);
+  parted = parted.replace(diff,diff + " Part " + part);
+  //id
+  parted = parted.replace(parted.split("BeatmapID:")[1].split("\n")[0], Math.floor(Math.random() * (12382942 - 100000 + 1) - 100000 ));
+  //osz
+  
+  return parted;
+  //var blob = new Blob([parted], {type: "text/plain;charset=utf-8"});
+  //saveAs(blob, finalName);
   }
-	
-	function downloadPart(part) {
-		var data = getPartContent(part);
-		var finalName = fileName.slice(0,-5) + " Part " + part +"].osu";
-		var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
-		saveAs(blob, finalName);
-	}
-	
-	function downloadOSZ() {
-		var zip = new JSZip();
-		for(int i=0;i<allPart.length;i++) {
-			zip.file(getPartContent(i+1),fileName.slice(0,-5) + " Part " + parseInt(i+1) +"].osu");
-		}
-		zip.generateAsync({type:"blob"})
+  
+  function downloadPart(part) {
+    var data = getPartContent(part);
+    var finalName = fileName.slice(0,-5) + " Part " + part +"].osu";
+    var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, finalName);
+  }
+  
+  function downloadOSZ() {
+    var zip = new JSZip();
+    for(var i=0;i<allPart.length;i++) {
+      zip.file(fileName.slice(0,-5) + " Part " + parseInt(i+1) +"].osu",getPartContent(i+1));
+    }
+    zip.generateAsync({type:"blob"})
 .then(function(content) {
-
     saveAs(content, "fl.osz");
 });
-	}
+  }
   function read() {
     var files = document.getElementById('map').files;
     if (!files.length) {
       alert('Please select a file!');
       return;
     }
-
     var file = files[0];
-
     var reader = new FileReader();
     reader.onloadend = function(evt) {
       if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-      	content = evt.target.result;
-      	fileName = file.name;
-      	var object = content.split("[HitObjects]")[1];
-      	var part = 1;
-      	var firstObject = object.split("/n")[0].split(",")[2].split(",")[0];
-      	var firstObjectByLine = 1;
-      	var element = document.getElementById("main");
-      	var val = timeL.value;
-      	element.innerHTML += "Filename : " + fileName + "<br>";
-      	element.innerHTML += "Object(s) : " + object.split("\n").length + "<br>";
-      	for(var i=1;i<object.split("\n").length;i++) {
-      		var timing = object.split("\n")[i].split(",")[2].split(",")[0];
-      		var limit = parseInt(firstObject) + (val * 1000 * part);
-      		console.log(timing + ":" + limit);
-      		if(timing >= limit) {
-      			var partContent = "";
-      			for(var k=firstObjectByLine;k<=i;k++) {
-      				partContent += object.split("\n")[k] + "\n";
-      			}
-      			firstObjectByLine = i + 1;
-      			element.innerHTML += "<a onclick='downloadPart(" + part + ");'>Part : " + part + "</a><br>";
-      			allPart.push([partContent]);
-      			part++;
-      		} else if(parseInt(i + 2) == parseInt(object.split("\n").length)) {
-      			//alert("s");
-      			var partContent = "";
-      			for(var k=firstObjectByLine;k<=i;k++) {
-      				partContent += object.split("\n")[k] + "\n";
-      			}
-      			element.innerHTML += "<a onclick='downloadPart(" + part + ");'>Part : " + part + "</a><br>";
-      			allPart.push([partContent]);
-      		}
-      	}
+        content = evt.target.result;
+        fileName = file.name;
+        var object = content.split("[HitObjects]")[1];
+        var part = 1;
+        var firstObject = object.split("/n")[0].split(",")[2].split(",")[0];
+        var firstObjectByLine = 1;
+        var element = document.getElementById("main");
+        var val = document.getElementById("timeL").value;
+        element.innerHTML += "Filename : " + fileName + "<br>";
+        element.innerHTML += "Object(s) : " + object.split("\n").length + "<br>";
+        for(var i=1;i<object.split("\n").length;i++) {
+          var timing = object.split("\n")[i].split(",")[2].split(",")[0];
+          var limit = parseInt(firstObject) + (val * 1000 * part);
+          if(timing >= limit) {
+            var partContent = "";
+            for(var k=firstObjectByLine;k<=i;k++) {
+              partContent += object.split("\n")[k] + "\n";
+            }
+            firstObjectByLine = i + 1;
+            element.innerHTML += "<a onclick='downloadPart(" + part + ");'>Part : " + part + "</a><br>";
+            allPart.push([partContent]);
+            part++;
+          } else if(parseInt(i + 2) == parseInt(object.split("\n").length)) {
+            //alert("s");
+            var partContent = "";
+            for(var k=firstObjectByLine;k<=i;k++) {
+              partContent += object.split("\n")[k] + "\n";
+            }
+            element.innerHTML += "<a onclick='downloadPart(" + part + ");'>Part : " + part + "</a><br>";
+            allPart.push([partContent]);
+          }
+        }
       }
     };
     reader.readAsBinaryString(file);
