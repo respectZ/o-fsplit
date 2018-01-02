@@ -4,6 +4,7 @@
 <style type="text/css">
 </style>
 <script src="FileSaver.js"></script>
+	<script src="JSZip.js"></script>
 </head>
 <link rel="stylesheet" href="o.css">
 <body>
@@ -19,7 +20,7 @@
 var allPart = [];
 var content = "";
 var fileName = "";
-function downloadPart(part) {
+function getPartContent(part) {
 	var parted = content.split("[HitObjects]")[0] + "[HitObjects]\n";
 	parted += "\n" + allPart[parseInt(part-1)];
 	var diff = fileName.split("[")[1];
@@ -27,9 +28,31 @@ function downloadPart(part) {
 	parted = parted.replace(diff,diff + " Part " + part);
 	//id
 	parted = parted.replace(parted.split("BeatmapID:")[1].split("\n")[0], Math.floor(Math.random() * (12382942 - 100000 + 1) - 100000 ));
-	var blob = new Blob([parted], {type: "text/plain;charset=utf-8"});
-	saveAs(blob, fileName.slice(0,-5) + " Part " + part +"].osu");
+	//osz
+	
+	return parted;
+	//var blob = new Blob([parted], {type: "text/plain;charset=utf-8"});
+	//saveAs(blob, finalName);
   }
+	
+	function downloadPart(part) {
+		var data = getPartContent(part);
+		var finalName = fileName.slice(0,-5) + " Part " + part +"].osu";
+		var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
+		saveAs(blob, finalName);
+	}
+	
+	function downloadOSZ() {
+		var zip = new JSZip();
+		for(int i=0;i<allPart.length;i++) {
+			zip.file(getPartContent(i+1),fileName.slice(0,-5) + " Part " + parseInt(i+1) +"].osu");
+		}
+		zip.generateAsync({type:"blob"})
+.then(function(content) {
+
+    saveAs(content, "fl.osz");
+});
+	}
   function read() {
     var files = document.getElementById('map').files;
     if (!files.length) {
@@ -40,12 +63,10 @@ function downloadPart(part) {
     var file = files[0];
 
     var reader = new FileReader();
-    // If we use onloadend, we need to check the readyState.
     reader.onloadend = function(evt) {
       if (evt.target.readyState == FileReader.DONE) { // DONE == 2
       	content = evt.target.result;
       	fileName = file.name;
-      	alert(content);
       	var object = content.split("[HitObjects]")[1];
       	var part = 1;
       	var firstObject = object.split("/n")[0].split(",")[2].split(",")[0];
@@ -66,10 +87,6 @@ function downloadPart(part) {
       			firstObjectByLine = i + 1;
       			element.innerHTML += "<a onclick='downloadPart(" + part + ");'>Part : " + part + "</a><br>";
       			allPart.push([partContent]);
-      			//element.innerHTML += partContent;
-      			//alert(partContent);
-      			//var blob = new Blob([partContent], {type: "text/plain;charset=utf-8"});
-				//saveAs(blob, "hello world.txt");
       			part++;
       		} else if(parseInt(i + 2) == parseInt(object.split("\n").length)) {
       			//alert("s");
@@ -79,16 +96,10 @@ function downloadPart(part) {
       			}
       			element.innerHTML += "<a onclick='downloadPart(" + part + ");'>Part : " + part + "</a><br>";
       			allPart.push([partContent]);
-      			//element.innerHTML += partConten
-      			//element.innerHTML += partContent;
       		}
-      		//console.log(i);
-      		//console.log(object.split("\n").length);
       	}
       }
     };
-
-    //var blob = file.slice(start, stop + 1);
     reader.readAsBinaryString(file);
   }
 </script>
