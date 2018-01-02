@@ -13,3 +13,4 @@ To do list
 Thanks to :
 https://www.pixiv.net/member.php?id=9678597 (background)
 https://github.com/eligrey/FileSaver.js/ (FileSaver.js)
+https://stuk.github.io/jszip/ JSZip
